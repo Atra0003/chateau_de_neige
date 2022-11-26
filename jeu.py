@@ -100,7 +100,8 @@ def deplacer_gauche():
     else:
         deplacer_droite()
     turtle.onkeypress(deplacer_gauche, "Left")   # Réassocie la touche Left à la fonction deplacer_gauche
-    event()
+    indice()
+    question()
 
 
 
@@ -120,8 +121,8 @@ def deplacer_droite():
     else:
         deplacer_gauche()
     turtle.onkeypress(deplacer_droite, "Right")   # Réassocie la touche Left à la fonction deplacer_gauche
-    event()
-
+    indice()
+    question()
 
 def deplacer_haut():
     #vérifier que le move est posible ...
@@ -138,7 +139,8 @@ def deplacer_haut():
     else:
         deplacer_bas()
     turtle.onkeypress(deplacer_haut, "Up")   # Réassocie la touche Left à la fonction deplacer_gauche
-    event()
+    indice()
+    question()
 
 
 def deplacer_bas():
@@ -156,50 +158,89 @@ def deplacer_bas():
     else:
         deplacer_haut()
     turtle.onkeypress(deplacer_bas, "Down") # Réassocie la touche Left à la fonction deplacer_gauche
-    event()
+    indice()
+    question()
 
 
-
-def event():
-    print(CONFIGS.objet)
+def indice():
     for elem in CONFIGS.objet:
-        print(CONFIGS.objet[elem])
+
         if CONFIGS.POSITION_DEPART == [int(elem[0]), int(elem[1])]:
+            #message = CONFIGS.objet[int(elem[0]), int(elem[1])]
+            message = CONFIGS.objet[elem[0], elem[1]]
             turtle.up()
-            turtle.goto(CONFIGS.POINT_AFFICHAGE_INVENTAIRE[0], CONFIGS.POINT_AFFICHAGE_INVENTAIRE[1])
-            turtle.down()
-            turtle.dot(10, "red")
+            CONFIGS.POINT_AFFICHAGE_INVENTAIRE = list(CONFIGS.POINT_AFFICHAGE_INVENTAIRE)
+            CONFIGS.POINT_AFFICHAGE_INVENTAIRE[1] -= 45
+            pos = (CONFIGS.POINT_AFFICHAGE_INVENTAIRE[0], CONFIGS.POINT_AFFICHAGE_INVENTAIRE[1])
+            turtle.goto(pos[0], pos[1])
             turtle.fd(10)
-            turtle.write(elem[2])
-            
-            
+            turtle.dot(10, "black")
+            turtle.write(message, font=('Arial', 15, 'normal'))
+
+            turtle.goto(CONFIGS.ZONE_PLAN_MINI[0]+(CONFIGS.POSITION_DEPART[1]*CONFIGS.dimention_box[0]) + CONFIGS.dimention_box[0] // 2,
+                CONFIGS.ZONE_PLAN_MAXI[1]-(CONFIGS.POSITION_DEPART[0]*CONFIGS.dimention_box[1]) - CONFIGS.dimention_box[1] // 2)
+            del CONFIGS.objet[elem[0], elem[1]]
+            break
+
+def question():
+    for elem in CONFIGS.portes:
+        if CONFIGS.POSITION_DEPART == [int(elem[0]), int(elem[1])]:
+            reponse = turtle.textinput("Question", CONFIGS.portes[elem[0], elem[1]][0])
+            reponse = "\'" + reponse + "\'"
+            print(reponse)
+            if reponse == CONFIGS.portes[elem[0], elem[1]][1]:
+                print("A")
+            turtle.listen()
 
 
-def creer_dictionnaire_des_objets(fichier_des_objets):
-    file_objets= open(fichier_des_objets, "r", encoding="utf-8")
-    file_objets = file_objets.readlines()
-    ret_objets = {}
+
+def creer_dictionnaires(fichier):
+    file= open(fichier, "r", encoding="utf-8")
+    file = file.readlines()
+    ret = {}
     
-    for objet in file_objets:
+    for objet in file:
         for elem in objet:
-            objet = objet.replace(" ", "").replace("\n", "").replace("(", "").replace(")", "").replace("\"", "\'")
-        
-        
-        
-        print(objet)
-        objet = objet.split(",")
-        ret_objets[(objet[0], objet[1])] = objet[2]
-    print(ret_objets)
-    return ret_objets
-    
+            objet = objet.replace("\n", "").replace("(", "").replace(")", "").replace("\"", "")
+            clef, clef1, clef2, message = 0, "", "", ""
+            for char in objet:
+                if clef == 0:
+                    if char != " ":
+                        if char == ",":
+                            clef += 1
+                        else:
+                            clef1 += char
+                elif clef == 1:
+                    if char != " ":
+                        if char == ",":
+                            clef += 1
+                        else:
+                            clef2 += char
+                else:
+                    message += char
+            if fichier == CONFIGS.fichier_questions:
+                cpt, liste = 0, []
+                for i in range(len(message)-1, 0, -1):
+                    if message[i] == ",":
+                        cpt = len(message) - cpt
+                        liste.append(message[0:cpt])
+                        liste.append(message[cpt:])
+                        liste[1] = liste[1].strip()
+                    cpt += 1
+                ret[clef1, clef2] = liste
+            else:
+                ret[clef1, clef2] = message 
+    return ret
+
+
     
   
 if __name__ == "__main__":
     turtle.listen()   
     file = CONFIGS.fichier_plan
     CONFIGS.map = file_handling(file)
-    #CONFIGS.objet = creer_dictionnaire_des_objets(CONFIGS.fichier_objets)
-    #print(CONFIGS.map)
+    CONFIGS.objet = creer_dictionnaires(CONFIGS.fichier_objets)
+    CONFIGS.portes = creer_dictionnaires(CONFIGS.fichier_questions)
     build_map()
     move()
     
