@@ -1,4 +1,5 @@
 
+
 import CONFIGS
 import turtle 
 
@@ -33,6 +34,7 @@ def build_map():
                 CONFIGS.ZONE_PLAN_MAXI[1]-(CONFIGS.POSITION_DEPART[0]*CONFIGS.dimention_box[1]) - CONFIGS.dimention_box[1] // 2)
     
     turtle.dot(10, CONFIGS.COULEUR_PERSONNAGE)
+    #indice()
     
     
     
@@ -46,15 +48,15 @@ def box(line, elem, dimention_box):
     turtle.up()
     turtle.goto(CONFIGS.ZONE_PLAN_MINI[0] + (elem*dimention_box[0]), CONFIGS.ZONE_PLAN_MAXI[1] - (line*dimention_box[1]))
     turtle.speed(10)
-    turtle.down()
+    #turtle.down()
     
     for cote in range(2):
         turtle.tracer(0)
         turtle.begin_fill()
         turtle.color(color)
-        turtle.forward(dimention_box[0])
+        turtle.fd(dimention_box[0])
         turtle.right(dimention_box[2])
-        turtle.forward(dimention_box[1])
+        turtle.fd(dimention_box[1])
         turtle.right(dimention_box[2])
         turtle.end_fill()
     
@@ -64,9 +66,17 @@ def hide_dot():
         color = CONFIGS.COULEURS[int(digit)]
     else:
         digit = CONFIGS.map[CONFIGS.POSITION_DEPART[0]][CONFIGS.POSITION_DEPART[1]]
-        #print(digit)
-        color = CONFIGS.COULEURS[int(digit)]
-    turtle.dot(10, color)
+        if CONFIGS.COULEURS[int(digit)] == CONFIGS.COULEURS[3]:
+            turtle.dot(10, "red")
+            
+        if CONFIGS.COULEURS[int(digit)] == CONFIGS.COULEURS[4]:
+            CONFIGS.map[CONFIGS.POSITION_DEPART[0]][CONFIGS.POSITION_DEPART[1]] = "0"
+            box(CONFIGS.POSITION_DEPART[0], CONFIGS.POSITION_DEPART[1], CONFIGS.dimention_box)
+    
+        else:
+            color = CONFIGS.COULEURS[int(digit)]
+            turtle.dot(10, color)
+    
     
 
 
@@ -100,8 +110,9 @@ def deplacer_gauche():
     else:
         deplacer_droite()
     turtle.onkeypress(deplacer_gauche, "Left")   # Réassocie la touche Left à la fonction deplacer_gauche
+    question(deplacer_droite)
     indice()
-    question()
+    tresor()
 
 
 
@@ -121,8 +132,9 @@ def deplacer_droite():
     else:
         deplacer_gauche()
     turtle.onkeypress(deplacer_droite, "Right")   # Réassocie la touche Left à la fonction deplacer_gauche
+    question(deplacer_gauche)
     indice()
-    question()
+    tresor()
 
 def deplacer_haut():
     #vérifier que le move est posible ...
@@ -139,8 +151,9 @@ def deplacer_haut():
     else:
         deplacer_bas()
     turtle.onkeypress(deplacer_haut, "Up")   # Réassocie la touche Left à la fonction deplacer_gauche
+    question(deplacer_bas)
     indice()
-    question()
+    tresor()
 
 
 def deplacer_bas():
@@ -158,39 +171,93 @@ def deplacer_bas():
     else:
         deplacer_haut()
     turtle.onkeypress(deplacer_bas, "Down") # Réassocie la touche Left à la fonction deplacer_gauche
+    question(deplacer_haut)
     indice()
-    question()
+    tresor()
 
 
 def indice():
     for elem in CONFIGS.objet:
-
         if CONFIGS.POSITION_DEPART == [int(elem[0]), int(elem[1])]:
-            #message = CONFIGS.objet[int(elem[0]), int(elem[1])]
             message = CONFIGS.objet[elem[0], elem[1]]
             turtle.up()
             CONFIGS.POINT_AFFICHAGE_INVENTAIRE = list(CONFIGS.POINT_AFFICHAGE_INVENTAIRE)
             CONFIGS.POINT_AFFICHAGE_INVENTAIRE[1] -= 45
             pos = (CONFIGS.POINT_AFFICHAGE_INVENTAIRE[0], CONFIGS.POINT_AFFICHAGE_INVENTAIRE[1])
             turtle.goto(pos[0], pos[1])
-            turtle.fd(10)
-            turtle.dot(10, "black")
+            turtle.down()
+            turtle.color("green")
             turtle.write(message, font=('Arial', 15, 'normal'))
-
+            del CONFIGS.objet[elem[0], elem[1]]
+            turtle.up()
             turtle.goto(CONFIGS.ZONE_PLAN_MINI[0]+(CONFIGS.POSITION_DEPART[1]*CONFIGS.dimention_box[0]) + CONFIGS.dimention_box[0] // 2,
                 CONFIGS.ZONE_PLAN_MAXI[1]-(CONFIGS.POSITION_DEPART[0]*CONFIGS.dimention_box[1]) - CONFIGS.dimention_box[1] // 2)
-            del CONFIGS.objet[elem[0], elem[1]]
             break
+            
 
-def question():
+def question(move):
     for elem in CONFIGS.portes:
         if CONFIGS.POSITION_DEPART == [int(elem[0]), int(elem[1])]:
+            print(CONFIGS.portes[elem[0], elem[1]][1])
+            turtle.up()
+            turtle.goto(CONFIGS.POINT_AFFICHAGE_ANNONCES[0] - 200, CONFIGS.POINT_AFFICHAGE_ANNONCES[1])
+            turtle.color("black")
+            turtle.write("C'est porte est pour le moment fermé, répondé correctement à la question suivante pour l'ouvrir.", font=('Arial', 15, 'normal'))
+            turtle.goto(CONFIGS.POINT_AFFICHAGE_ANNONCES[0] - 100, CONFIGS.POINT_AFFICHAGE_ANNONCES[1] - 20)
+            turtle.write(CONFIGS.portes[elem[0], elem[1]][0], font=('Arial', 15, 'normal'))
+            turtle.goto(CONFIGS.ZONE_PLAN_MINI[0]+(CONFIGS.POSITION_DEPART[1]*CONFIGS.dimention_box[0]) + CONFIGS.dimention_box[0] // 2,
+                        CONFIGS.ZONE_PLAN_MAXI[1]-(CONFIGS.POSITION_DEPART[0]*CONFIGS.dimention_box[1]) - CONFIGS.dimention_box[1] // 2)
             reponse = turtle.textinput("Question", CONFIGS.portes[elem[0], elem[1]][0])
-            reponse = "\'" + reponse + "\'"
-            print(reponse)
-            if reponse == CONFIGS.portes[elem[0], elem[1]][1]:
-                print("A")
-            turtle.listen()
+            if reponse != None or reponse != "":
+                reponse_correct = CONFIGS.portes[elem[0], elem[1]][1].replace("\'", "")
+                if reponse == reponse_correct:
+                    CONFIGS.map[CONFIGS.POSITION_DEPART[0]][CONFIGS.POSITION_DEPART[1]] = "0"
+                    box(CONFIGS.POSITION_DEPART[0], CONFIGS.POSITION_DEPART[1], CONFIGS.dimention_box)
+                    del CONFIGS.portes[elem[0], elem[1]]
+                    turtle.up()
+                    turtle.goto(CONFIGS.ZONE_PLAN_MINI[0]+(CONFIGS.POSITION_DEPART[1]*CONFIGS.dimention_box[0]) + CONFIGS.dimention_box[0] // 2,
+                        CONFIGS.ZONE_PLAN_MAXI[1]-(CONFIGS.POSITION_DEPART[0]*CONFIGS.dimention_box[1]) - CONFIGS.dimention_box[1] // 2)
+                    turtle.dot(10, "red")
+                    clear_annonceur()
+                    break
+            if reponse == None or reponse == "" or reponse != reponse_correct:
+                move()
+                clear_annonceur()
+    
+
+    turtle.listen()
+
+
+
+def clear_annonceur():
+    turtle.up()
+    turtle.goto(CONFIGS.POINT_AFFICHAGE_ANNONCES[0] - 250, CONFIGS.POINT_AFFICHAGE_ANNONCES[1] + 20)
+    turtle.color("white")
+    turtle.begin_fill()
+    for i in range(2):
+        turtle.fd(1500)
+        turtle.right(90)
+        turtle.fd(50)
+        turtle.right(90)
+    turtle.end_fill()
+    turtle.goto(CONFIGS.ZONE_PLAN_MINI[0]+(CONFIGS.POSITION_DEPART[1]*CONFIGS.dimention_box[0]) + CONFIGS.dimention_box[0] // 2,
+                        CONFIGS.ZONE_PLAN_MAXI[1]-(CONFIGS.POSITION_DEPART[0]*CONFIGS.dimention_box[1]) - CONFIGS.dimention_box[1] // 2)
+
+def tresor():
+    digit = CONFIGS.map[CONFIGS.POSITION_DEPART[0]][CONFIGS.POSITION_DEPART[1]]
+    if digit == "2":
+        print("b")
+        turtle.up()
+        turtle.goto(CONFIGS.POINT_AFFICHAGE_ANNONCES[0], CONFIGS.POINT_AFFICHAGE_ANNONCES[1])
+        turtle.color("black")
+        turtle.down()
+        message = "Bravo, tu as gagnée"
+        turtle.write(message, font=('Arial', 20, 'normal'))
+
+
+
+
+
 
 
 
@@ -243,7 +310,6 @@ if __name__ == "__main__":
     CONFIGS.portes = creer_dictionnaires(CONFIGS.fichier_questions)
     build_map()
     move()
-    
     
     
 
